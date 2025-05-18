@@ -1,17 +1,26 @@
 import { useState } from 'react'
 import './App.css'
 function button_test () {
-    const [count, setCount] = useState(0)
+    const [disp, setDisp] = useState("play random note")
     return (
         <button onClick={() =>{ 
-          setCount((count) => count + 1); 
-          sound_test()}}>
-          count is {count}
+          // setCount((count) => count + 1); 
+          var note = 24 + Math.floor(Math.random() * (120 - 24))
+          setDisp(name(note))
+          play_note(note)}}>
+          {disp}
         </button>
     )
 }
 export default button_test
+const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+function name(note: number){
+    return (noteNames[note % 12] + String(Math.floor(note / 12) - 1))
+}
 
+for (var i = 24; i < 120; i++){
+  console.log(name(i))
+}
 // from stack overflow
 // var context = new AudioContext();
 
@@ -45,7 +54,8 @@ export default button_test
 // const freq = 440.0
 var audioCtx = new AudioContext()
 
-export function sound_test() {
+
+export function play_note(note: number) {
   // var note_arr = new Float32Array(sample_rate)
   // for (var i = 0; i < note_arr.length; i++) {
   //   note_arr[i] = Math.sin(2 * Math.PI * freq * i / sample_rate)
@@ -57,9 +67,11 @@ export function sound_test() {
   // source.connect(context.destination)
   // source.start(0)
   const oscillator = audioCtx.createOscillator();
+  
+  var freq = 440. * Math.pow(2.0, (note - 69) / 12.0)
 
   oscillator.type = "sine";
-  oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // value in hertz
+  oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime); // value in hertz
   oscillator.connect(audioCtx.destination);
   oscillator.start();
   setTimeout(() => {oscillator.stop()}, 1000)

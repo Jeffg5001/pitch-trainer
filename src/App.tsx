@@ -1,25 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
-const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+type NoteName = 'C' | 'C#' | 'D' | 'D#' | 'E' | 'F' | 'F#' | 'G' | 'G#' | 'A' | 'A#' | 'B';
+type Difficulty = 'octave' | 'half-octave' | 'semitone';
 
-function midiToFrequency(midi) {
-  return 440 * Math.pow(2, (midi - 69) / 12);
+interface NoteOption {
+  value: number;
+  label: string;
 }
 
-function midiToNoteName(midi) {
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
+
+const noteNames: NoteName[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const midiToFrequency = (midi: number): number => {
+  return 440 * Math.pow(2, (midi - 69) / 12);
+};
+
+const midiToNoteName = (midi: number): string => {
   const octave = Math.floor(midi / 12) - 1;
   const noteIndex = midi % 12;
   return noteNames[noteIndex] + octave;
-}
+};
 
-function generateOptionsForDifficulty(currentMidi, difficulty) {
-  const options = new Set();
+const generateOptionsForDifficulty = (currentMidi: number, difficulty: Difficulty): NoteOption[] => {
+  const options = new Set<number>();
   const noteIndex = currentMidi % 12;
   
   switch(difficulty) {
     case 'octave':
-      // Add all notes of the same pitch class in different octaves
       for (let midi = 22; midi <= 120; midi++) {
         if (midi % 12 === noteIndex) {
           options.add(midi);
@@ -28,64 +41,63 @@ function generateOptionsForDifficulty(currentMidi, difficulty) {
       break;
       
     case 'half-octave':
-      // Add notes in steps of 6 semitones
       for (let midi = 22; midi <= 120; midi++) {
         if ((midi - currentMidi) % 6 === 0) {
           options.add(midi);
         }
       }
-      // Make sure current note is included
       options.add(currentMidi);
       break;
       
     case 'semitone':
-      // Add all notes
       for (let midi = 22; midi <= 120; midi++) {
         options.add(midi);
       }
       break;
-      
-    default:
-      break;
   }
   
-  return Array.from(options).sort((a, b) => a - b).map(midi => ({
-    value: midi,
-    label: midiToNoteName(midi)
-  }));
-}
+  return Array.from(options)
+    .sort((a, b) => a - b)
+    .map(midi => ({
+      value: midi,
+      label: midiToNoteName(midi)
+    }));
+};
 
-function App() {
-  const [currentMidi, setCurrentMidi] = useState(null);
-  const [selectedNote, setSelectedNote] = useState('');
-  const [totalGuesses, setTotalGuesses] = useState(0);
-  const [correctGuesses, setCorrectGuesses] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [audioContext, setAudioContext] = useState(null);
-  const [difficulty, setDifficulty] = useState('semitone');
-  const [options, setOptions] = useState([]);
+const App: React.FC = () => {
+  const [currentMidi, setCurrentMidi] = useState<number | null>(null);
+  const [selectedNote, setSelectedNote] = useState<string>('');
+  const [totalGuesses, setTotalGuesses] = useState<number>(0);
+  const [correctGuesses, setCorrectGuesses] = useState<number>(0);
+  const [showResult, setShowResult] = useState<boolean>(false);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>('semitone');
+  const [options, setOptions] = useState<NoteOption[]>([]);
 
-  useEffect(() => {
-    setAudioContext(new (window.AudioContext || window.webkitAudioContext)());
-    generateNewNote();
-  }, []);
-
-  const generateNewNote = () => {
+  const generateNewNote = (): void => {
     const newMidi = Math.floor(Math.random() * (120 - 22 + 1)) + 22;
+    console.log('note:', midiToNoteName(newMidi))
     setCurrentMidi(newMidi);
     setSelectedNote('');
     setShowResult(false);
     setOptions(generateOptionsForDifficulty(newMidi, difficulty));
   };
 
+  const memoizedGenerateNewNote = useCallback(generateNewNote, [difficulty])
+  
   useEffect(() => {
-    if (currentMidi) {
+    setAudioContext(new (window.AudioContext || window.webkitAudioContext)());
+    memoizedGenerateNewNote()
+  }, [memoizedGenerateNewNote]);
+
+  useEffect(() => {
+    if (currentMidi !== null) {
       setOptions(generateOptionsForDifficulty(currentMidi, difficulty));
     }
   }, [difficulty, currentMidi]);
 
-  const playNote = () => {
-    if (!audioContext) return;
+  const playNote = (): void => {
+    if (!audioContext || currentMidi === null) return;
 
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -103,8 +115,8 @@ function App() {
     oscillator.stop(audioContext.currentTime + 1);
   };
 
-  const handleGuess = () => {
-    if (!selectedNote) return;
+  const handleGuess = (): void => {
+    if (!selectedNote || currentMidi === null) return;
 
     setTotalGuesses(prev => prev + 1);
     if (parseInt(selectedNote) === currentMidi) {
@@ -113,7 +125,15 @@ function App() {
     setShowResult(true);
   };
 
-  const accuracy = totalGuesses > 0 ? (correctGuesses / totalGuesses * 100).toFixed(1) : 0;
+  const handleDifficultyChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    setDifficulty(event.target.value as Difficulty);
+  };
+
+  const handleNoteSelection = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    setSelectedNote(event.target.value);
+  };
+
+  const accuracy = totalGuesses > 0 ? (correctGuesses / totalGuesses * 100).toFixed(1) : '0';
 
   return (
     <div className="App">
@@ -123,7 +143,7 @@ function App() {
         <label>Difficulty: </label>
         <select 
           value={difficulty} 
-          onChange={(e) => setDifficulty(e.target.value)}
+          onChange={handleDifficultyChange}
         >
           <option value="octave">Octave</option>
           <option value="half-octave">Half-octave</option>
@@ -136,7 +156,7 @@ function App() {
 
         <select 
           value={selectedNote} 
-          onChange={(e) => setSelectedNote(e.target.value)}
+          onChange={handleNoteSelection}
           disabled={showResult}
         >
           <option value="">Select a note</option>
@@ -151,7 +171,7 @@ function App() {
           Submit Guess
         </button>
 
-        {showResult && (
+        {showResult && currentMidi !== null && selectedNote && (
           <div className="result">
             <p>Actual note: <span className="highlight">{midiToNoteName(currentMidi)}</span></p>
             <p>Your guess: <span className="highlight">{midiToNoteName(parseInt(selectedNote))}</span></p>
@@ -162,6 +182,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
 export default App;

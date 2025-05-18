@@ -1,6 +1,6 @@
 const difficulties = ['Easy', 'Medium', 'Hard']
 
-type Difficulty = typeof difficulties[number]
+export type Difficulty = typeof difficulties[number]
 
 type DifficultyChooserProps = {
     handleDifficultyClick: (difficulty: Difficulty) => void

@@ -5,7 +5,7 @@ function button_test () {
     return (
         <button onClick={() =>{ 
           // setCount((count) => count + 1); 
-          var note = 24 + Math.floor(Math.random() * (120 - 24))
+          var note = limitLower + Math.floor(Math.random() * (limitUpper - limitLower))
           setDisp(name(note))
           play_note(note)}}>
           {disp}
@@ -13,6 +13,10 @@ function button_test () {
     )
 }
 export default button_test
+
+
+const limitLower = 24
+const limitUpper = 120
 const noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 function name(note: number){
     return (noteNames[note % 12] + String(Math.floor(note / 12) - 1))
@@ -21,6 +25,44 @@ function name(note: number){
 for (var i = 24; i < 120; i++){
   console.log(name(i))
 }
+
+function options_octave(note: number) {
+  var opts = []
+  for (var shift = -10; shift < 10; shift++){
+    var opt_note = note + shift * 12
+    if (opt_note >= limitLower && opt_note < limitUpper){
+      opts.push(opt_note)
+    }
+  }
+  return opts
+}
+
+function options_half_octave(note: number) {
+  var opts = []
+  for (var shift = -20; shift < 20; shift++){
+    var opt_note = note + shift * 6
+    if (opt_note >= limitLower && opt_note < limitUpper){
+      opts.push(opt_note)
+    }
+  }
+  return opts
+}
+
+function options_semi(_: number){
+  var opts = []
+  for (var opt_note=limitLower; opt_note<limitUpper; opt_note++){
+    opts.push(opt_note)
+  }
+  return opts
+}
+
+console.log(options_octave(12))
+console.log(options_octave(13))
+console.log(options_octave(120))
+console.log(options_semi(0))
+console.log(options_half_octave(12))
+
+
 // from stack overflow
 // var context = new AudioContext();
 

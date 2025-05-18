@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import button_test from './pitch_proto.tsx'
 import './App.css'
 import DifficultyChooser from './components/DifficultyChooser'
 
@@ -36,6 +37,13 @@ function App() {
       <h1>{pages[currentPage].title}</h1>
       <div className="card">
         {getCurrentPage(currentPage)}
+        {/* <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button> */}
+        {button_test()}
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
       </div>
     </>
   )

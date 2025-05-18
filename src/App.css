@@ -1,42 +1,85 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+.App {
   text-align: center;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.game-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  margin-top: 20px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.difficulty-selector {
+  margin: 20px 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.difficulty-selector select {
+  margin-left: 10px;
 }
 
-.card {
-  padding: 2em;
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
-.read-the-docs {
-  color: #888;
+button:hover {
+  background-color: #45a049;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+select {
+  padding: 10px;
+  font-size: 16px;
+  width: 200px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.result {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #2f3640;
+  color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.result p {
+  margin: 10px 0;
+  font-size: 1.1em;
+}
+
+.highlight {
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.accuracy {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #555;
+}
+
+.result button {
+  margin-top: 15px;
+  background-color: #3498db;
+}
+
+.result button:hover {
+  background-color: #2980b9;
 }
